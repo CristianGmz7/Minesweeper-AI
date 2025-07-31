@@ -1,0 +1,1 @@
+# Juego base de buscaminas para entrenar IA
