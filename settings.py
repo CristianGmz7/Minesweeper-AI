@@ -14,7 +14,7 @@ YELLOW = (255, 255, 0)
 BGCOLOUR = DARKGREY
 
 # game settings
-TILESIZE = 32
+TILESIZE = 24
 ROWS = 16
 COLS = 16
 AMOUNT_MINES = 40
@@ -40,11 +40,11 @@ tile_empty = pygame.transform.scale(
     (TILESIZE, TILESIZE)
 )
 tile_exploded = pygame.transform.scale(
-    pygame.image.load(os.path.join("assets", "TileExploded.png")), 
+    pygame.image.load(os.path.join("assets", "TileFlag.png")), 
     (TILESIZE, TILESIZE)
 )
 tile_flag = pygame.transform.scale(
-    pygame.image.load(os.path.join("assets", "TileFlag.png")), 
+    pygame.image.load(os.path.join("assets", "TileExploded.png")), 
     (TILESIZE, TILESIZE)
 )
 tile_mine = pygame.transform.scale(
