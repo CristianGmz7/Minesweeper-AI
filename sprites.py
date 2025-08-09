@@ -1,3 +1,4 @@
+#sprites.py
 import random
 import pygame
 from settings import *
@@ -34,7 +35,7 @@ class FaceButton:
     def change_state(self, state):
         if state in self.states:
             self.image = self.states[state]
-            self.rect = self.image.get_rect(center=(self.x, self.y))  # Actualizar rect
+            self.rect = self.image.get_rect(center=(self.x, self.y))
             
     def draw(self, surface):
         surface.blit(self.image, (self.rect.x, self.rect.y))
@@ -49,22 +50,17 @@ class Tile:
         self.rect = pygame.Rect(self.x, self.y, TILESIZE, TILESIZE)
 
     def draw(self, board_surface):
-        # CASO ESPECIAL: Bandera incorrecta (TileNotMine)
         if self.revealed and self.image == tile_not_mine:
             board_surface.blit(tile_not_mine, (self.x, self.y - TOP_PANEL_HEIGHT))
-        # Casilla revelada normal
         elif not self.flagged and self.revealed:
             board_surface.blit(self.image, (self.x, self.y - TOP_PANEL_HEIGHT))
-        # Casilla con bandera
         elif self.flagged and not self.revealed:
             board_surface.blit(tile_flag, (self.x, self.y - TOP_PANEL_HEIGHT))
-        # Casilla no revelada
         elif not self.revealed:
             board_surface.blit(tile_unknown, (self.x, self.y - TOP_PANEL_HEIGHT))
 
     def __repr__(self):
         return self.type
-
 
 class Board:
     def __init__(self):
@@ -122,7 +118,6 @@ class Board:
         screen.blit(self.board_surface, (0, TOP_PANEL_HEIGHT))
 
     def dig(self, x, y):
-        # Si la casilla tiene bandera, no hacer nada
         if self.board_list[x][y].flagged:
             return True
             
@@ -137,14 +132,13 @@ class Board:
 
         self.board_list[x][y].revealed = True
 
-        # Expandir solo a casillas sin bandera
         for row in range(max(0, x-1), min(ROWS-1, x+1) + 1):
             for col in range(max(0, y-1), min(COLS-1, y+1) + 1):
-                # Solo expandir a casillas no marcadas con bandera
                 if not self.board_list[row][col].flagged and (row, col) not in self.dug:
                     self.dig(row, col)
         return True
 
     def display_board(self):
-        for row in self.board_list:
-            print(row)
+        #for row in self.board_list:
+        #    print(row)
+        pass
