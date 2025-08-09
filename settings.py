@@ -16,9 +16,9 @@ BGCOLOUR = DARKGREY
 
 # game settings
 TILESIZE = 16  # Cambiado a 16px
-ROWS = 16
-COLS = 16
-AMOUNT_MINES = 40
+ROWS = 9
+COLS = 9
+AMOUNT_MINES = 10
 WIDTH = TILESIZE * ROWS
 HEIGHT = TILESIZE * COLS + 50  # Added space for top panel
 TOP_PANEL_HEIGHT = 50
