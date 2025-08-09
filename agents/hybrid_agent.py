@@ -42,47 +42,35 @@ class HybridAgent(BaseAgent):
             except Exception as e:
                 print(f"⚠️ Error verificando modelo: {e}")
 
-    def predict_action(self, state):
+    def predict_action(self, state, flags_remaining=None):
         """
-        Predice una acción usando primero reglas y luego el modelo neuronal.
+        Predice una acción considerando las banderas disponibles
         
         Args:
-            state: Estado actual del tablero
-            
-        Returns:
-            Tupla (tipo_accion, x, y) o None si no hay acción clara
+            state: Estado del tablero
+            flags_remaining: Número de banderas disponibles (opcional)
         """
-        # Primero probar con reglas
-        rule_action = self.rules_agent.predict_action(state)
+        # Primero probar con reglas (que ahora incluyen info de banderas)
+        rule_action = self.rules_agent.predict_action(state, flags_remaining)
         if rule_action:
             return rule_action
         
-        # Si no hay regla aplicable y tenemos modelo, usarlo
+        # Lógica del modelo neuronal con restricción de banderas
         if self.model:
-            try:
-                # Preprocesamiento adicional si es necesario
-                processed_state = self._preprocess_state(state)
-                
-                # Predicción
-                left_probs, right_probs = self.model.predict(processed_state[np.newaxis, ...], verbose=0)
-                left_probs = left_probs[0].reshape(ROWS, COLS)
-                right_probs = right_probs[0].reshape(ROWS, COLS)
-                
-                # Filtrar casillas ya reveladas o marcadas
-                left_probs = self._filter_invalid_actions(left_probs, state)
-                right_probs = self._filter_invalid_actions(right_probs, state)
-                
-                # Selección de acción
-                max_left = np.unravel_index(np.argmax(left_probs), left_probs.shape)
-                max_right = np.unravel_index(np.argmax(right_probs), right_probs.shape)
-                
-                if left_probs[max_left] > right_probs[max_right] and left_probs[max_left] > 0.5:
-                    return ('left', max_left[0], max_left[1])
-                elif right_probs[max_right] > 0.5:
-                    return ('right', max_right[0], max_right[1])
-                
-            except Exception as e:
-                print(f"⚠️ Error en predicción del modelo: {e}")
+            left_probs, right_probs = self.model.predict(state[np.newaxis, ...], verbose=0)
+            left_probs = left_probs[0].reshape(ROWS, COLS)
+            right_probs = right_probs[0].reshape(ROWS, COLS)
+            
+            # Filtrado mejorado
+            right_probs = self._filter_with_flag_constraints(right_probs, state, flags_remaining)
+            
+            # Selección de acción
+            max_left = np.unravel_index(np.argmax(left_probs), left_probs.shape)
+            max_right = np.unravel_index(np.argmax(right_probs), right_probs.shape)
+            
+            if left_probs[max_left] > right_probs[max_right]:
+                return ('left', max_left[0], max_left[1])
+            return ('right', max_right[0], max_right[1])
         
         return None
 
@@ -90,6 +78,16 @@ class HybridAgent(BaseAgent):
         """Preprocesa el estado para el modelo"""
         # Puedes añadir transformaciones aquí si es necesario
         return state
+    
+    def _filter_with_flag_constraints(self, probs, state, flags_remaining):
+        """Filtra acciones de bandera según disponibilidad"""
+        if flags_remaining is not None and flags_remaining <= 0:
+            # Si no hay banderas disponibles, anular todas las probabilidades de colocar banderas
+            return np.zeros_like(probs)
+        
+        # Filtrado normal de casillas inválidas
+        return self._filter_invalid_actions(probs, state)
+
 
     def _filter_invalid_actions(self, probs, state):
         """
@@ -110,3 +108,4 @@ class HybridAgent(BaseAgent):
         filtered_probs[invalid_mask] = 0
         
         return filtered_probs
+  

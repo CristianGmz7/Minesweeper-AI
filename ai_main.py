@@ -19,7 +19,9 @@ class AIGame(Game):
         # Ejecutar acciones de la IA cada 500ms
         if self.auto_play and current_time - self.last_action_time > 500:
             state = board_to_state(self.screen, self.tile_analyzer)
-            action = self.agent.predict_action(state)
+            
+            # Pasar el estado del juego y banderas disponibles al agente
+            action = self.agent.predict_action(state, self.flags_remaining)
             
             if action:
                 action_type, x, y = action
@@ -34,6 +36,7 @@ class AIGame(Game):
                 self.draw()
                 pygame.display.flip()
         
+        # Manejar eventos normales del juego
         super().events()
     
     def handle_left_click(self, x, y):
@@ -83,15 +86,20 @@ class AIGame(Game):
         
         # Solo se puede marcar casillas no reveladas
         if not tile.revealed:
-            # Cambiar estado de bandera
-            tile.flagged = not tile.flagged
-            
-            # Actualizar contador de banderas
+            # Si ya hay bandera, permitir quitarla (aumentar contador)
             if tile.flagged:
-                self.flags_remaining -= 1
-            else:
+                tile.flagged = False
                 self.flags_remaining += 1
+                self.update_flag_counter()
+                return
             
+            # Si no hay banderas disponibles, no hacer nada
+            if self.flags_remaining <= 0:
+                return
+            
+            # Colocar nueva bandera
+            tile.flagged = True
+            self.flags_remaining -= 1
             self.update_flag_counter()
 
 if __name__ == "__main__":
