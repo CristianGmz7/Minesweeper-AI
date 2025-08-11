@@ -87,7 +87,7 @@ class MinesweeperModel:
             print(f"❌ Error en predicción: {e}")
             return None, None
     
-    def train(self, X, y, epochs=50, batch_size=32, validation_split=0.2):
+    def train(self, X, y, epochs=5000, batch_size=64, validation_split=0.2):
         """Entrena el modelo"""
         if self.model is None:
             self.create_model()
@@ -96,7 +96,7 @@ class MinesweeperModel:
         callbacks = [
             tf.keras.callbacks.EarlyStopping(
                 monitor='val_loss', 
-                patience=10, 
+                patience=20, 
                 restore_best_weights=True
             ),
             tf.keras.callbacks.ReduceLROnPlateau(

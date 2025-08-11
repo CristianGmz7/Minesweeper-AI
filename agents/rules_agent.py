@@ -35,7 +35,8 @@ class RulesAgent(BaseAgent):
         if mine_action:
             return mine_action
         
-        return None
+        random_action = self._get_random_hidden_tile(state)
+        return random_action
     
     def _is_board_completely_hidden(self, state):
         """Verifica si todo el tablero está sin revelar"""

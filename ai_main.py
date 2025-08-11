@@ -124,10 +124,10 @@ class AIGame(Game):
         
         # Revelar casilla
         if not self.board.dig(col, row):
-            self.reset_game(False)  # Perdió
+            self.reset_game()  # Perdió
             print(f"💥 Mina en ({row},{col}) - Juego perdido")
         elif self.check_win():
-            self.reset_game(True)   # Ganó
+            self.reset_game()   # Ganó
             print("🎉 ¡Juego ganado!")
         else:
             print(f"🔍 Revelada casilla ({row},{col})")
@@ -187,7 +187,7 @@ class AIGame(Game):
                     self.elapsed_time += 1
                     self.update_timer()
                 else:
-                    self.reset_game(False)
+                    self.reset_game()
     
     def show_help(self):
         """Muestra ayuda en consola"""
