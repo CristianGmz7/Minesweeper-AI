@@ -15,6 +15,7 @@ class TileAnalyzer:
     @staticmethod
     def analyze_face_state(screen):
         """Analiza el estado de la carita del juego con mayor precisión"""
+        
         try:
             # Calcular posición absoluta de la carita
             face_x = WIDTH // 2 - 12

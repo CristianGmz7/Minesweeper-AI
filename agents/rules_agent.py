@@ -1,144 +1,173 @@
 from agents.base_agent import BaseAgent
 from settings import ROWS, COLS
+import random
 
 class RulesAgent(BaseAgent):
-    def _init_(self):
-        super()._init_()
+    def __init__(self):
+        super().__init__()
     
     def predict_action(self, state, flags_remaining=None):
         """
-        Implementa todas las reglas lógicas del Buscaminas con control de banderas.
+        Implementa las reglas lógicas del Buscaminas
         
         Args:
-            state: Estado del tablero (array numpy)
-            flags_remaining: Número de banderas disponibles (opcional)
+            state: Estado del tablero (numpy array de forma ROWS x COLS x 6)
+            flags_remaining: Número de banderas disponibles
             
         Returns:
-            Tupla (tipo_accion, x, y) o None si no hay acción válida
+            Tupla (tipo_accion, fila, columna) o None
         """
-        board = state[..., :5]  # Características del tablero
-        game_active = state[0, 0, 5]  # Estado del juego
+        # Verificar si el juego está activo
+        game_active = state[0, 0, 5] > 0.5
+        if not game_active:
+            return None
         
-        if game_active < 0.5:
-            return None  # Juego no activo
+        if self._is_board_completely_hidden(state):
+            return self._get_random_hidden_tile(state)
         
-        # Regla 1: Si el número es igual a casillas ocultas adyacentes, todas son minas
-        action = self._apply_rule_hidden_mines(board, flags_remaining)
-        if action:
-            return action
+        # Regla 1: Números satisfechos - revelar casillas seguras
+        safe_action = self._find_safe_tiles(state)
+        if safe_action:
+            return safe_action
         
-        # Regla 2: Si el número es igual a banderas adyacentes, las demás son seguras
-        action = self._apply_rule_safe_tiles(board)
-        if action:
-            return action
-        
-        # Regla 3: Análisis de fronteras para configuraciones complejas
-        action = self._apply_border_analysis(board, flags_remaining)
-        if action:
-            return action
+        # Regla 2: Números con todas las minas identificadas - marcar minas
+        mine_action = self._find_mines(state, flags_remaining)
+        if mine_action:
+            return mine_action
         
         return None
     
-    def _apply_rule_hidden_mines(self, board, flags_remaining):
-        """Regla: Número == Casillas ocultas adyacentes => Todas son minas"""
-        for x in range(ROWS):
-            for y in range(COLS):
-                if board[x, y, 2] > 0:  # Es un número
-                    number = int(board[x, y, 4] * 8)
-                    hidden_neighbors = self._get_hidden_neighbors(board, x, y)
-                    
-                    if len(hidden_neighbors) == number:
-                        # Verificar si podemos colocar banderas
-                        if flags_remaining is not None and len(hidden_neighbors) > flags_remaining:
-                            continue  # No hay suficientes banderas
-                        
-                        # Todas las casillas ocultas deben ser minas
-                        for nx, ny in hidden_neighbors:
-                            if not self._has_flag(board, nx, ny):
-                                return ('right', nx, ny)
-        return None
+    def _is_board_completely_hidden(self, state):
+        """Verifica si todo el tablero está sin revelar"""
+        for row in range(ROWS):
+            for col in range(COLS):
+                if state[row, col, 0] < 0.5:  # Si está revelado
+                    return False
+        return True
     
-    def _apply_rule_safe_tiles(self, board):
-        """Regla: Número == Banderas adyacentes => Las demás casillas son seguras"""
-        for x in range(ROWS):
-            for y in range(COLS):
-                if board[x, y, 2] > 0:  # Es un número
-                    number = int(board[x, y, 4] * 8)
-                    flag_neighbors = self._get_flag_neighbors(board, x, y)
-                    hidden_neighbors = self._get_hidden_neighbors(board, x, y)
-                    
-                    if len(flag_neighbors) == number and hidden_neighbors:
-                        # Todas las minas ya están marcadas, las demás son seguras
-                        for nx, ny in hidden_neighbors:
-                            if not self._has_flag(board, nx, ny):
-                                return ('left', nx, ny)
-        return None
-    
-    def _apply_border_analysis(self, board, flags_remaining):
-        """Análisis avanzado de fronteras con control de banderas"""
-        border_tiles = self._get_border_tiles(board)
+    def _get_random_hidden_tile(self, state):
+        """Devuelve una casilla sin revelar aleatoria"""
+        hidden_tiles = []
+        for row in range(ROWS):
+            for col in range(COLS):
+                if state[row, col, 0] > 0.5:  # Si está sin revelar
+                    hidden_tiles.append(('left', row, col))
         
-        for x, y in border_tiles:
-            if board[x, y, 2] > 0:  # Es un número
-                number = int(board[x, y, 4] * 8)
-                hidden = self._get_hidden_neighbors(board, x, y)
-                flags = self._get_flag_neighbors(board, x, y)
+        return random.choice(hidden_tiles) if hidden_tiles else None
+    
+    def _find_safe_tiles(self, state):
+        """Encuentra casillas seguras para revelar"""
+        for row in range(ROWS):
+            for col in range(COLS):
+                # Solo procesar casillas que son números revelados
+                if not self._is_revealed_number(state, row, col):
+                    continue
                 
-                remaining_mines = number - len(flags)
+                number = self._get_number_value(state, row, col)
+                if number == 0:
+                    continue
                 
-                if remaining_mines == 0:
-                    for nx, ny in hidden:
-                        if not self._has_flag(board, nx, ny):
-                            return ('left', nx, ny)
+                # Obtener vecinos
+                hidden_neighbors = self._get_hidden_neighbors(state, row, col)
+                flag_neighbors = self._get_flag_neighbors(state, row, col)
                 
-                elif remaining_mines == len(hidden):
-                    # Verificar banderas disponibles
-                    if flags_remaining is not None and len(hidden) > flags_remaining:
+                # Si el número de banderas == número, las casillas ocultas son seguras
+                if len(flag_neighbors) == number and hidden_neighbors:
+                    target_row, target_col = hidden_neighbors[0]
+                    return ('left', target_row, target_col)
+        
+        return None
+    
+    def _find_mines(self, state, flags_remaining):
+        """Encuentra minas para marcar con banderas"""
+        # Verificar si tenemos banderas disponibles
+        if flags_remaining is not None and flags_remaining <= 0:
+            return None
+        
+        for row in range(ROWS):
+            for col in range(COLS):
+                # Solo procesar casillas que son números revelados
+                if not self._is_revealed_number(state, row, col):
+                    continue
+                
+                number = self._get_number_value(state, row, col)
+                if number == 0:
+                    continue
+                
+                # Obtener vecinos
+                hidden_neighbors = self._get_hidden_neighbors(state, row, col)
+                flag_neighbors = self._get_flag_neighbors(state, row, col)
+                
+                # Si casillas ocultas + banderas == número, las ocultas son minas
+                total_mines_around = len(hidden_neighbors) + len(flag_neighbors)
+                if total_mines_around == number and hidden_neighbors:
+                    # Verificar que no excedamos las banderas disponibles
+                    if flags_remaining is not None and len(hidden_neighbors) > flags_remaining:
                         continue
-                        
-                    for nx, ny in hidden:
-                        if not self._has_flag(board, nx, ny):
-                            return ('right', nx, ny)
+                    
+                    target_row, target_col = hidden_neighbors[0]
+                    return ('right', target_row, target_col)
         
         return None
     
-    def _get_neighbors(self, x, y):
-        """Obtiene coordenadas de las casillas adyacentes"""
+    def _is_revealed_number(self, state, row, col):
+        """Verifica si una casilla es un número revelado"""
+        # Características: [sin_revelar, bandera, es_numero, espacio_vacio, valor_numero, juego_activo]
+        is_hidden = state[row, col, 0] > 0.5      # Sin revelar
+        has_flag = state[row, col, 1] > 0.5       # Con bandera
+        is_number = state[row, col, 2] > 0.5      # Es número
+        
+        # Es número revelado si: es_numero=True Y sin_revelar=False Y bandera=False
+        return is_number and not is_hidden and not has_flag
+    
+    def _get_number_value(self, state, row, col):
+        """Obtiene el valor numérico de una casilla"""
+        if not self._is_revealed_number(state, row, col):
+            return 0
+        
+        # El valor está normalizado (0-1), desnormalizar a 1-8
+        normalized_value = state[row, col, 4]
+        return int(round(normalized_value * 8))
+    
+    def _get_neighbors(self, row, col):
+        """Obtiene las coordenadas de todas las casillas vecinas"""
         neighbors = []
-        for dx in (-1, 0, 1):
-            for dy in (-1, 0, 1):
-                nx, ny = x + dx, y + dy
-                if 0 <= nx < ROWS and 0 <= ny < COLS and (dx, dy) != (0, 0):
-                    neighbors.append((nx, ny))
+        for dr in [-1, 0, 1]:
+            for dc in [-1, 0, 1]:
+                if dr == 0 and dc == 0:
+                    continue
+                
+                new_row = row + dr
+                new_col = col + dc
+                
+                if 0 <= new_row < ROWS and 0 <= new_col < COLS:
+                    neighbors.append((new_row, new_col))
+        
         return neighbors
     
-    def _get_hidden_neighbors(self, board, x, y):
-        """Obtiene casillas adyacentes no reveladas y sin bandera"""
-        return [
-            (nx, ny) for nx, ny in self._get_neighbors(x, y)
-            if board[nx, ny, 0] > 0.5 and board[nx, ny, 1] < 0.5
-        ]
-    
-    def _get_flag_neighbors(self, board, x, y):
-        """Obtiene casillas adyacentes con bandera"""
-        return [
-            (nx, ny) for nx, ny in self._get_neighbors(x, y)
-            if board[nx, ny, 1] > 0.5
-        ]
-    
-    def _has_flag(self, board, x, y):
-        """Verifica si una casilla tiene bandera"""
-        return board[x, y, 1] > 0.5
-    
-    def _get_border_tiles(self, board):
-        """Encuentra casillas fronterizas (números adyacentes a casillas ocultas)"""
-        border_tiles = set()
+    def _get_hidden_neighbors(self, state, row, col):
+        """Obtiene vecinos que están sin revelar y sin bandera"""
+        neighbors = self._get_neighbors(row, col)
+        hidden = []
         
-        for x in range(ROWS):
-            for y in range(COLS):
-                if board[x, y, 2] > 0:  # Es un número
-                    hidden = self._get_hidden_neighbors(board, x, y)
-                    if hidden:
-                        border_tiles.add((x, y))
+        for nr, nc in neighbors:
+            is_hidden = state[nr, nc, 0] > 0.5    # Sin revelar
+            has_flag = state[nr, nc, 1] > 0.5     # Con bandera
+            
+            if is_hidden and not has_flag:
+                hidden.append((nr, nc))
         
-        return border_tiles
+        return hidden
+    
+    def _get_flag_neighbors(self, state, row, col):
+        """Obtiene vecinos que tienen bandera"""
+        neighbors = self._get_neighbors(row, col)
+        flagged = []
+        
+        for nr, nc in neighbors:
+            has_flag = state[nr, nc, 1] > 0.5     # Con bandera
+            
+            if has_flag:
+                flagged.append((nr, nc))
+        
+        return flagged
