@@ -1,3 +1,4 @@
+#settings.py
 # COLORS (r, g, b)
 import pygame
 import os
@@ -14,18 +15,18 @@ YELLOW = (255, 255, 0)
 BGCOLOUR = DARKGREY
 
 # game settings
-TILESIZE = 32
-ROWS = 16
-COLS = 16
-AMOUNT_MINES = 40
+TILESIZE = 16  # Cambiado a 16px
+ROWS = 9
+COLS = 9
+AMOUNT_MINES = 10
 WIDTH = TILESIZE * ROWS
 HEIGHT = TILESIZE * COLS + 50  # Added space for top panel
 TOP_PANEL_HEIGHT = 50
 FPS = 60
 TITLE = "Minesweeper Clone"
-DIGIT_WIDTH = 20
-DIGIT_HEIGHT = 35
-FACE_SIZE = 40
+DIGIT_WIDTH = 10  # Ajustado para assets más pequeños
+DIGIT_HEIGHT = 20  # Ajustado para assets más pequeños
+FACE_SIZE = 24  # Ajustado para assets más pequeños
 
 # Load all assets
 tile_numbers = []
@@ -65,6 +66,7 @@ tile_face_smile = pygame.transform.scale(
     pygame.image.load(os.path.join("assets", "TileFaceSmile.png")), 
     (FACE_SIZE, FACE_SIZE)
 )
+
 tile_face_loose = pygame.transform.scale(
     pygame.image.load(os.path.join("assets", "TileFaceLoose.png")), 
     (FACE_SIZE, FACE_SIZE)
