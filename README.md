@@ -130,27 +130,6 @@ python train_ai.py  # Opción 4
 - `utils/tile_analyzer.py` ✅
 - `assets/` (toda la carpeta) ✅
 
-## 🐛 Solución de Problemas
-
-### "No se encuentra el modelo"
-```bash
-python train_ai.py --quick
-```
-
-### "Error de coordenadas"
-- El nuevo sistema usa coordenadas (fila, columna) consistentemente
-- La IA maneja automáticamente la conversión
-
-### "Pocos datos de entrenamiento"
-```bash
-python train_ai.py  # Opción 3 (mixto)
-```
-
-### "La IA no funciona bien"
-1. Entrenar con más datos
-2. Usar entrenamiento mixto
-3. Evaluar y reentrenar si es necesario
-
 ## 🎯 Consejos para Mejor Rendimiento
 
 ### Para Entrenamiento Manual:
@@ -184,13 +163,6 @@ python train_ai.py  # Opción 3 (mixto)
 - Es espacio vacío (0/1)
 - Valor numérico (0.0-1.0)
 - Estado del juego (0/1)
-
-## 🤝 Contribuir
-
-1. Las mejoras son bienvenidas
-2. Mantener la estructura simplificada
-3. Documentar cambios importantes
-4. Probar antes de enviar
 
 ## 📝 Notas Técnicas
 
