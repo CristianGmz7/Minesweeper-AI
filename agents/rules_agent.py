@@ -7,16 +7,6 @@ class RulesAgent(BaseAgent):
         super().__init__()
     
     def predict_action(self, state, flags_remaining=None):
-        """
-        Implementa las reglas lógicas del Buscaminas
-        
-        Args:
-            state: Estado del tablero (numpy array de forma ROWS x COLS x 6)
-            flags_remaining: Número de banderas disponibles
-            
-        Returns:
-            Tupla (tipo_accion, fila, columna) o None
-        """
         # Verificar si el juego está activo
         game_active = state[0, 0, 5] > 0.5
         if not game_active:

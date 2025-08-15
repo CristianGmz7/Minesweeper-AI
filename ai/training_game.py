@@ -9,9 +9,6 @@ from ai.data_collector import DataCollector
 from settings import TOP_PANEL_HEIGHT, TILESIZE, ROWS, COLS, AMOUNT_MINES
 
 class TrainingGame(Game):
-    """
-    Versión especializada del juego para recolectar datos de entrenamiento
-    """
     def __init__(self, collector=None):
         self.first_click = True
         self.timer_started = False

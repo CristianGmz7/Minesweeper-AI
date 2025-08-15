@@ -6,9 +6,6 @@ from agents.ai_agent import AIAgent
 from settings import TILESIZE, TOP_PANEL_HEIGHT, ROWS, COLS
 
 class AIGame(Game):
-    """
-    Versión del juego que permite jugar con IA
-    """
     def __init__(self, model_path="models/minesweeper_model.h5"):
         self.ai_enabled = False
         self.ai_agent = None

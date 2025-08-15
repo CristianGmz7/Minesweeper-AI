@@ -11,13 +11,15 @@ class MinesweeperModel:
         # Input: estado del tablero (ROWS, COLS, 6 features)
         input_layer = tf.keras.layers.Input(shape=(ROWS, COLS, 6))
         
-        # Capas convolucionales
+        # Capas convolucionales y de normalización
         x = tf.keras.layers.Conv2D(32, (3, 3), activation='relu', padding='same')(input_layer)
         x = tf.keras.layers.BatchNormalization()(x)
         
+        # Segunda capa convolucional
         x = tf.keras.layers.Conv2D(64, (3, 3), activation='relu', padding='same')(x)
         x = tf.keras.layers.BatchNormalization()(x)
         
+        # Tercera capa convolucional
         x = tf.keras.layers.Conv2D(32, (3, 3), activation='relu', padding='same')(x)
         x = tf.keras.layers.BatchNormalization()(x)
         

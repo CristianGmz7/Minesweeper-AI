@@ -5,27 +5,11 @@ from settings import ROWS, COLS
 
 class AIAgent(BaseAgent):
     def __init__(self, model=None):
-        """
-        Agente de IA híbrido que combina reglas lógicas con red neuronal
-        
-        Args:
-            model: Instancia de MinesweeperModel (opcional)
-        """
         super().__init__()
         self.model = model
         self.rules_agent = RulesAgent()
         
     def predict_action(self, state, flags_remaining=None):
-        """
-        Predice la mejor acción para el estado actual
-        
-        Args:
-            state: Estado del tablero (numpy array)
-            flags_remaining: Número de banderas disponibles
-            
-        Returns:
-            Tupla (accion, fila, columna) o None
-        """
         # Primero intentar con reglas lógicas (más confiables)
         rule_action = self.rules_agent.predict_action(state, flags_remaining)
         if rule_action:
@@ -77,16 +61,6 @@ class AIAgent(BaseAgent):
         return None
     
     def _filter_invalid_actions(self, probs, state):
-        """
-        Filtra acciones inválidas (casillas ya reveladas o con bandera)
-        
-        Args:
-            probs: Matriz de probabilidades
-            state: Estado del tablero
-            
-        Returns:
-            Matriz de probabilidades filtrada
-        """
         filtered_probs = np.copy(probs)
         
         for row in range(ROWS):

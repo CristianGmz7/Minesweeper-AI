@@ -1,8 +1,3 @@
-#!/usr/bin/env python3
-"""
-Script simple para entrenar la IA de Minesweeper
-"""
-
 import os
 import sys
 

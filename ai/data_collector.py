@@ -20,15 +20,6 @@ class DataCollector:
         self.rules_agent = RulesAgent()  
         
     def add_sample(self, state, action_type, row, col):
-        """
-        Añade una muestra de entrenamiento
-        
-        Args:
-            state: Estado del tablero (numpy array)
-            action_type: 'left' o 'right'
-            row: Fila de la acción
-            col: Columna de la acción
-        """
         # Crear targets
         left_target = np.zeros(ROWS * COLS, dtype=np.float32)
         right_target = np.zeros(ROWS * COLS, dtype=np.float32)
@@ -126,7 +117,6 @@ class DataCollector:
             print(f"Error al imprimir estado del tablero: {e}")
 
     def generate_rule_based_data(self, num_samples=5000):
-        """Versión robusta de generación de datos"""
         print("🎮 Iniciando generación automática de datos...")
         
         samples_generated = 0
