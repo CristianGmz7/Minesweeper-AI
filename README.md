@@ -2,6 +2,12 @@
 
 Una implementación de Minesweeper con inteligencia artificial que combina reglas lógicas con redes neuronales.
 
+## Antes de iniciar:
+Descargar la carpeta assets del siguiente enlace
+https://drive.google.com/file/d/1qNDsIoYWTcJMupDhne5Oqp-aNvGwD7VD/view?usp=sharing
+
+Descomprimir el archivo .rar y colocarlo en la raiz del proyecto clonado, al mismo nivel de las carpetas agents, ai, data, game, models, utils y de los archivos ai_main.py, main.py, settings.py, train_ai.py 
+
 ## 🚀 Inicio Rápido
 
 ### 1. Instalar dependencias
